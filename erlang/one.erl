@@ -1,7 +1,12 @@
 -module(one).
 -export([totalFuel/0]).
 
-totalFuel() -> lists:sum(lists:map(fun fuelRequired/1, input())).
+totalFuel() -> lists:sum(
+    lists:map(
+        fun fuelRequired/1, 
+        input()
+    )
+).
 
 fuelRequired(N) -> trunc(N / 3) - 2.
 input() ->
