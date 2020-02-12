@@ -9,8 +9,13 @@ input() ->
 .
 
 partOne() -> 
-  % TODO: try using dict instead of list for storage
-  R = processCodeBlock(1, input()),
+  Input = input(),
+  Size = length(Input)-1,
+  print(Input),
+  print(Size),
+  InputMap = maps:from_list(lists:zip(lists:seq(0, Size), Input)),
+  print(InputMap),
+  R = processCodeBlock(0, InputMap),
   io:format("~p~n",[R])
 .
 
@@ -22,25 +27,19 @@ add(X,Y) -> X + Y.
 multiply(X,Y) -> X * Y.  
 
 processCodeBlock(StartingPosition, Intcodes) -> 
-  Block = lists:sublist(Intcodes, StartingPosition, 4),
-  case Block of
-    [] -> throw("shouldn't be empty");
-    [OptCode, ValPosition1, ValPosition2, Pos] -> 
-      Val1 = lists:nth(ValPosition1+1, Intcodes),
-      Val2 = lists:nth(ValPosition2+1, Intcodes),
-      NewValue = case OptCode of
-          99 -> print(Intcodes),
-                throw("Halt, you've had enough fun");
-          1 -> add(Val1, Val2);
-          2 -> multiply(Val1, Val2);
-          _ -> 'poop'
-      end,
-      % https://stackoverflow.com/questions/4776033/how-to-change-an-element-in-a-list-in-erlang
-      % TODO: try using dict instead of list for storage
-      io:format("V:~p @ P:~p StartingPosition:~p~n",[NewValue,Pos,StartingPosition]),      
-      UpdatedList = lists:sublist(Intcodes,Pos) ++ [NewValue] ++ lists:nthtail(Pos+1,Intcodes),
-      % print(UpdatedList),
-      processCodeBlock(StartingPosition + 4, UpdatedList);
-    _ -> throw("bad mmkay")
-  end.
-
+  OptCode = maps:get(StartingPosition, Intcodes),
+  Val1 = maps:get(maps:get(StartingPosition+1, Intcodes, "default kittens"), Intcodes, "meow"),
+  Val2 = maps:get(maps:get(StartingPosition+2, Intcodes, "default kittens"), Intcodes, "meow"),
+  KeyToUpdate = maps:get(StartingPosition+3, Intcodes, "default kittens"),
+  NewValue = case OptCode of
+      99 -> print(Intcodes),
+            print(maps:get(0, Intcodes)),
+            throw("Halt, you've had enough fun");
+      1 -> add(Val1, Val2);
+      2 -> multiply(Val1, Val2);
+      _ -> 'poop'
+  end,
+  io:format("V:~p @ P:~p StartingPosition:~p {~p} {~p}~n",[NewValue,KeyToUpdate,StartingPosition, Val1, Val2]),
+  UpdatedMap = maps:put(KeyToUpdate, NewValue, Intcodes),
+  processCodeBlock(StartingPosition + 4, UpdatedMap)
+.
