@@ -1,9 +1,9 @@
 -module(two).
--export([partOne/0]).
+-export([partOne/0, partTwo/0]).
 
 input() ->
-    % [1,0,0,3,1,1,2,3,1,3,4,3,1,5,0,3,2,10,1,19,1,19,5,23,1,23,9,27,2,27,6,31,1,31,6,35,2,35,9,39,1,6,39,43,2,10,43,47,1,47,9,51,1,51,6,55,1,55,6,59,2,59,10,63,1,6,63,67,2,6,67,71,1,71,5,75,2,13,75,79,1,10,79,83,1,5,83,87,2,87,10,91,1,5,91,95,2,95,6,99,1,99,6,103,2,103,6,107,2,107,9,111,1,111,5,115,1,115,6,119,2,6,119,123,1,5,123,127,1,127,13,131,1,2,131,135,1,135,10,0,99,2,14,0,0]
-    [1,12,2,3,1,1,2,3,1,3,4,3,1,5,0,3,2,10,1,19,1,19,5,23,1,23,9,27,2,27,6,31,1,31,6,35,2,35,9,39,1,6,39,43,2,10,43,47,1,47,9,51,1,51,6,55,1,55,6,59,2,59,10,63,1,6,63,67,2,6,67,71,1,71,5,75,2,13,75,79,1,10,79,83,1,5,83,87,2,87,10,91,1,5,91,95,2,95,6,99,1,99,6,103,2,103,6,107,2,107,9,111,1,111,5,115,1,115,6,119,2,6,119,123,1,5,123,127,1,127,13,131,1,2,131,135,1,135,10,0,99,2,14,0,0]
+    [1,0,0,3,1,1,2,3,1,3,4,3,1,5,0,3,2,10,1,19,1,19,5,23,1,23,9,27,2,27,6,31,1,31,6,35,2,35,9,39,1,6,39,43,2,10,43,47,1,47,9,51,1,51,6,55,1,55,6,59,2,59,10,63,1,6,63,67,2,6,67,71,1,71,5,75,2,13,75,79,1,10,79,83,1,5,83,87,2,87,10,91,1,5,91,95,2,95,6,99,1,99,6,103,2,103,6,107,2,107,9,111,1,111,5,115,1,115,6,119,2,6,119,123,1,5,123,127,1,127,13,131,1,2,131,135,1,135,10,0,99,2,14,0,0]
+    % [1,12,2,3,1,1,2,3,1,3,4,3,1,5,0,3,2,10,1,19,1,19,5,23,1,23,9,27,2,27,6,31,1,31,6,35,2,35,9,39,1,6,39,43,2,10,43,47,1,47,9,51,1,51,6,55,1,55,6,59,2,59,10,63,1,6,63,67,2,6,67,71,1,71,5,75,2,13,75,79,1,10,79,83,1,5,83,87,2,87,10,91,1,5,91,95,2,95,6,99,1,99,6,103,2,103,6,107,2,107,9,111,1,111,5,115,1,115,6,119,2,6,119,123,1,5,123,127,1,127,13,131,1,2,131,135,1,135,10,0,99,2,14,0,0]
     % [1,1,1,4,99,5,6,0,99]
   % [2,4,4,5,99,0]
 .
@@ -42,4 +42,61 @@ processCodeBlock(StartingPosition, Intcodes) ->
   io:format("V:~p @ P:~p StartingPosition:~p {~p} {~p}~n",[NewValue,KeyToUpdate,StartingPosition, Val1, Val2]),
   UpdatedMap = maps:put(KeyToUpdate, NewValue, Intcodes),
   processCodeBlock(StartingPosition + 4, UpdatedMap)
+.
+
+partTwo() -> 
+  Input = input(),
+  Size = length(Input)-1,
+  InputMap = maps:from_list(lists:zip(lists:seq(0, Size), Input)),
+  InputList = lists:seq(0, 99),
+
+  lists:map(
+    fun(Verb) -> 
+    lists:map(
+      fun(Noun) -> 
+        InputMap = maps:from_list(lists:zip(lists:seq(0, Size), Input)),
+        UpdatedInput = maps:put(1, Noun, maps:put(2,Verb,InputMap)),
+        Processed = processCodeBlockWithCheck(0, UpdatedInput),
+        ProcessedHead = maps:get(0, Processed),
+        IsDesired = isDesiredOutput(Noun, Verb, ProcessedHead),
+        case IsDesired of
+          true -> print(Noun * 1000 + Verb),
+                  throw("Found it");
+          _ -> noop
+        end,
+        
+        {Verb, Noun, ProcessedHead}
+      end, 
+    InputList) 
+    end, 
+  InputList)
+.
+
+isDesiredOutput(Noun, Verb, NewValue) -> 
+  DesiredOutput = 19690720,
+  Computed = (Noun * Verb),
+  Other = 100 * Noun + Verb,
+  print([Computed, Other, NewValue, "noun:", Noun, "verb:", Verb]),
+  DesiredOutput == NewValue
+.
+
+processCodeBlockWithCheck(StartingPosition, Intcodes) -> 
+  OptCode = maps:get(StartingPosition, Intcodes),
+  % print(Intcodes),
+  Noun = maps:get(maps:get(StartingPosition+1, Intcodes, "default kittens"), Intcodes, "meow"),
+  Verb = maps:get(maps:get(StartingPosition+2, Intcodes, "default kittens"), Intcodes, "meow"),
+  KeyToUpdate = maps:get(StartingPosition+3, Intcodes, "default kittens"),
+
+  case OptCode of
+      99 -> print(maps:get(0, Intcodes)),
+            Intcodes;
+      1 -> processWithUpdates(KeyToUpdate, add(Noun, Verb), Intcodes, StartingPosition);
+      2 -> processWithUpdates(KeyToUpdate, multiply(Noun, Verb), Intcodes, StartingPosition);
+      _ -> 'poop'
+  end 
+.
+
+processWithUpdates(KeyToUpdate, NewValue, Intcodes, StartingPosition) ->
+  UpdatedIntcodes = maps:put(KeyToUpdate, NewValue, Intcodes),
+  processCodeBlockWithCheck(StartingPosition + 4, UpdatedIntcodes)
 .
