@@ -1,0 +1,6 @@
+open this directory in your command line
+```
+erl
+c (four). // where four = filename
+four:partOne(). // where partOne = function
+```
