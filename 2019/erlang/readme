@@ -4,3 +4,10 @@ erl
 c (four). // where four = filename
 four:partOne(). // where partOne = function
 ```
+
+To run debugger:
+```
+erl
+c(four, debug_info).
+debugger:start(). // then attach...
+```
