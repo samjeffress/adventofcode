@@ -1,5 +1,5 @@
 import Debug.Trace
-
+import Data.List 
 expenseReport :: [Int]
 expenseReport = [
   1975,
@@ -212,9 +212,14 @@ pairThatSumsTo2020 first following = do
                 [] -> pairThatSumsTo2020 (head following) (tail following)
                 [x] -> trace ("first " ++ show first ++ "second" ++ show x)  x * first
                 xs -> 0 -- multiple return values
-  
   outcome
 
-  
--- productOfEntriesThatSumTo2020 :: [Int] -> Int
--- productOfEntriesThatSumTo2020 = pairexpenseReport
+
+tripletThatSumsTo2020 :: [Int] -> Int
+tripletThatSumsTo2020 expenseReport = do
+  let allCombinationsOfThreeExpense = concat (concat (map (\x -> map (\y -> map (\z -> [x,y,z]) (expenseReport \\ [x,y])) (expenseReport \\ [x])) expenseReport))
+  let triplesList = filter (\triple -> sum triple == 2020) allCombinationsOfThreeExpense
+  case triplesList of 
+    [] -> 0
+    [x] -> product x
+    xs -> product (head xs) -- multiple (contains duplicates)
