@@ -1,3 +1,6 @@
 *.beam
 .DS_Store
 .vscode
+dist/
+dist-newstyle/
+.ghc*
