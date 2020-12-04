@@ -1,15 +1,16 @@
+module D02 where
 import Debug.Trace
-import qualified Data.Text as T
+import Data.List.Split
 import System.IO  
   
 parseValidPassword :: String -> Bool
 parseValidPassword line = do 
   case words line of 
     [a, b, c] -> do
-      let aParts =  T.splitOn (T.pack "-") (T.pack a)
+      let aParts =  splitOn "-" a
       let requiredLetter = head b 
-      let minimumOccurance = read (T.unpack (head aParts))
-      let maximumOccurance = read (T.unpack (last aParts))
+      let minimumOccurance = read (head aParts)
+      let maximumOccurance = read (last aParts)
       let password = c
       let matchingLetters = filter (== requiredLetter) password
       length matchingLetters >= minimumOccurance && length matchingLetters <= maximumOccurance
@@ -24,10 +25,10 @@ parseValidPart2Password :: String -> Bool
 parseValidPart2Password line = do 
   case words line of 
     [a, b, c] -> do
-      let aParts =  T.splitOn (T.pack "-") (T.pack a)
+      let aParts =  splitOn "-" a
       let requiredLetter = head b 
-      let firstIndex = read (T.unpack (head aParts)) - 1
-      let secondIndex = read (T.unpack (last aParts)) - 1
+      let firstIndex = read (head aParts) - 1
+      let secondIndex = read (last aParts) - 1
       let password = c
       let result = xor (password !! firstIndex == requiredLetter)  (password !! secondIndex == requiredLetter)
       trace ("requiredletter " ++ show requiredLetter ++  " letters "  ++ show (password !! firstIndex) ++ " " ++ show (password !! secondIndex) ++ " result " ++ show result) result

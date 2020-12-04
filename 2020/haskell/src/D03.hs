@@ -1,3 +1,5 @@
+module D03 where
+
 import Debug.Trace
 import System.IO  
     

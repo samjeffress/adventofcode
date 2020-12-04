@@ -1,3 +1,4 @@
+module D01 where
 import Debug.Trace
 import Data.List 
 expenseReport :: [Int]
