@@ -4,6 +4,7 @@ import Data.List
 import Data.Char
 import Debug.Trace
 import Data.List.Split
+import Text.Regex.TDFA
 import System.IO  
 
 requiredFields :: [String]
@@ -18,21 +19,43 @@ requiredFields = [
     -- ,"cid"
   ]
 
-validate :: String -> Bool
-validate passport = do
+betweenInclusive :: Int -> Int -> Int -> Bool
+betweenInclusive lower upper candidate = 
+  candidate >= lower && candidate <= upper
+
+validateField :: String -> Bool
+validateField fieldKeyAndValue = do
+  let (key: value)  = splitOn ":" fieldKeyAndValue
+  let fullValue = concat value
+  case key of 
+    "byr" -> betweenInclusive 1920 2002 (read fullValue)
+    "iyr" -> betweenInclusive 2010 2020 (read fullValue)
+    "eyr" -> betweenInclusive 2020 2030 (read fullValue)
+    "hgt" -> if "cm" `isInfixOf` fullValue 
+              then do
+                let (cm:_) = splitOn "cm" fullValue
+                betweenInclusive 150 190 (read cm)
+              else do
+                let (inch:_) = splitOn "in" fullValue
+                betweenInclusive 59 76 (read inch)
+    "hcl" -> fullValue =~ "(#[a-f0-9]{6})"
+    "ecl" -> case fullValue of 
+            "amb" -> True
+            "blu" -> True
+            "brn" -> True
+            "gry" -> True
+            "grn" -> True
+            "hzl" -> True
+            "oth" -> True
+            _ -> False
+    "pid" -> fullValue =~ "^[0-9]{9}$"
+    _ -> False
+    
+validatePassport :: String -> Bool
+validatePassport passport = do
   let tokens = splitOn " " passport
-  False
--- byr (Birth Year) - four digits; at least 1920 and at most 2002.
--- iyr (Issue Year) - four digits; at least 2010 and at most 2020.
--- eyr (Expiration Year) - four digits; at least 2020 and at most 2030.
--- hgt (Height) - a number followed by either cm or in:
-
---     If cm, the number must be at least 150 and at most 193.
---     If in, the number must be at least 59 and at most 76.
-
--- hcl (Hair Color) - a # followed by exactly six characters 0-9 or a-f.
--- ecl (Eye Color) - exactly one of: amb blu brn gry grn hzl oth.
--- pid (Passport ID) - a nine-digit number, including leading zeroes.
+  let validationResult = filter validateField tokens
+  (trace (concat (intersperse " | " validationResult))) (trace  (show (length validationResult))) length validationResult >= 7
 
 toLowerString :: String -> String
 toLowerString = 
@@ -65,12 +88,38 @@ passportIsValid requiredFields passport  = do
   
   
 one = do 
-  handle <- openFile "04input.txt" ReadMode  
+  handle <- openFile "src/04input.txt" ReadMode  
   contents <- hGetContents handle
   let l = lines contents
   let validPassports = filter (passportIsValid requiredFields) (parsePassports l "" [])
   print (length validPassports)
   
   
--- > 244
--- < 291
+two = do 
+  handle <- openFile "src/04input.txt" ReadMode  
+  contents <- hGetContents handle
+  let l = lines contents
+  let validPassports = filter (passportIsValid requiredFields) (parsePassports l "" [])
+  print "validated:"
+  print (length (filter validatePassport validPassports))
+  
+test = do
+  let r = validatePassport "pid:252016128  ecl:gry byr:1952 iyr:2018 hcl:9016ff cid:158 hgt:161 eyr:1955"
+  print r
+  
+
+test2 = do
+  handle <- openFile "src/04.invalid.txt" ReadMode  
+  contents <- hGetContents handle
+  let l = lines contents
+  let validPassports = filter (passportIsValid requiredFields) (parsePassports l "" [])
+  print "validated:"
+  print (length (filter validatePassport validPassports))
+
+test3 = do
+  handle <- openFile "src/04.valid.txt" ReadMode  
+  contents <- hGetContents handle
+  let l = lines contents
+  let validPassports = filter (passportIsValid requiredFields) (parsePassports l "" [])
+  print "validated:"
+  print (length (filter validatePassport validPassports))
