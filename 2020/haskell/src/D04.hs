@@ -34,7 +34,7 @@ validateField fieldKeyAndValue = do
     "hgt" -> if "cm" `isInfixOf` fullValue 
               then do
                 let (cm:_) = splitOn "cm" fullValue
-                betweenInclusive 150 190 (read cm)
+                betweenInclusive 150 193 (read cm)
               else do
                 let (inch:_) = splitOn "in" fullValue
                 betweenInclusive 59 76 (read inch)
@@ -55,7 +55,7 @@ validatePassport :: String -> Bool
 validatePassport passport = do
   let tokens = splitOn " " passport
   let validationResult = filter validateField tokens
-  (trace (concat (intersperse " | " validationResult))) (trace  (show (length validationResult))) length validationResult >= 7
+  length validationResult >= 7
 
 toLowerString :: String -> String
 toLowerString = 
@@ -81,10 +81,7 @@ returnOneIfStringIsInString needle haystack  = do
 passportIsValid :: [String] -> String -> Bool
 passportIsValid requiredFields passport  = do
   let s = sum (map (\r -> returnOneIfStringIsInString r passport) requiredFields)
-  if s >= 7 then 
-    trace (show s ++ " " ++ passport) True
-  else 
-    trace (show s ++ " " ++ passport) False
+  s >= 7
   
   
 one = do 

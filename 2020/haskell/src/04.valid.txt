@@ -10,3 +10,5 @@ pid:545766238 ecl:hzl
 eyr:2022
 
 iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719
+
+hcl:#cfa07d eyr:2030 iyr:2013 cid:304 ecl:gry pid:199056608 hgt:192cm byr:1926
